@@ -4,11 +4,14 @@ from __future__ import annotations
 def load_customer_profile(customer: dict[str, str | None]) -> str:
     """Return a normalized customer name.
 
-    The synthetic crash report points here because this code assumes the name is
-    always present. If the name is None, `.strip()` would fail.
+    Raises ``ValueError`` when the ``name`` key is missing or ``None`` so
+    callers get a clear error instead of an ``AttributeError`` on ``None``.
     """
 
-    return customer["name"].strip().title()
+    name = customer.get("name")
+    if name is None or not name.strip():
+        raise ValueError("Customer record is missing a valid 'name' field.")
+    return name.strip().title()
 
 
 def build_account_overview(customer: dict[str, str | None]) -> dict[str, str]:
@@ -19,6 +22,13 @@ def build_account_overview(customer: dict[str, str | None]) -> dict[str, str]:
 
 
 def calculate_discount_ratio(total: int, discount: int) -> float:
+    """Return the ratio of *discount* to *total*.
+
+    Raises ``ValueError`` when *total* is zero so the caller gets a clear
+    error instead of an ``EXCEPTION_INT_DIVIDE_BY_ZERO`` crash.
+    """
+    if total == 0:
+        raise ValueError("Cannot calculate a discount ratio when 'total' is zero.")
     return discount / total
 
 
