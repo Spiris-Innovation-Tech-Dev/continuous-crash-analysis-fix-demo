@@ -17,6 +17,7 @@ jobs:
       - name: Comment that the workflow started
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" \
@@ -48,6 +49,7 @@ jobs:
         if: steps.gate.outputs.run != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" \
