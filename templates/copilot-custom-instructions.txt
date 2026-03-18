@@ -1,0 +1,5 @@
+This issue comes from a synthetic crash automation demo.
+
+Focus on the crash summary, stack trace, and the sample module in `src/demo_service.py`.
+If you can make the demo clearer or safer with a concrete change, open a draft pull request.
+If the issue is too synthetic for a meaningful code change, leave a concise diagnosis and suggested next customization steps.

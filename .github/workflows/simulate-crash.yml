@@ -1,0 +1,115 @@
+name: Simulate Crash
+
+on:
+  workflow_dispatch:
+    inputs:
+      crash_type:
+        description: Synthetic crash scenario
+        required: true
+        type: choice
+        default: null-pointer
+        options:
+          - null-pointer
+          - divide-by-zero
+          - assert-failure
+      service:
+        description: Service name
+        required: true
+        default: demo-service
+        type: string
+      environment:
+        description: Environment label
+        required: true
+        default: demo
+        type: string
+      faulting_function:
+        description: Faulting function
+        required: true
+        default: load_customer_profile
+        type: string
+      assign_copilot:
+        description: Assign Copilot when a new issue is created
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify issue automation token
+        env:
+          TOKEN_PRESENT: ${{ secrets.CRASH_DEMO_GH_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          if [[ "${TOKEN_PRESENT}" != "true" ]]; then
+            echo "Missing CRASH_DEMO_GH_TOKEN. Add a PAT or GitHub App token before running this demo."
+            exit 1
+          fi
+
+      - name: Generate synthetic crash report
+        id: crash
+        run: |
+          python3 scripts/simulate_crash.py \
+            --service "${{ inputs.service }}" \
+            --environment "${{ inputs.environment }}" \
+            --crash-type "${{ inputs.crash_type }}" \
+            --faulting-function "${{ inputs.faulting_function }}" \
+            --output-dir "reports/generated/${{ github.run_id }}" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Upload crash report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-report-${{ steps.crash.outputs.fingerprint }}
+          path: reports/generated/${{ github.run_id }}
+
+      - name: Create or comment on crash issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.CRASH_DEMO_GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 scripts/upsert_issue.py \
+            --report-json "${{ steps.crash.outputs.report_json }}" \
+            --report-markdown "${{ steps.crash.outputs.report_markdown }}" \
+            --repository "${{ github.repository }}" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Assign Copilot coding agent
+        id: copilot
+        if: steps.issue.outputs.issue_created == 'true' && inputs.assign_copilot
+        env:
+          GH_TOKEN: ${{ secrets.CRASH_DEMO_GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 scripts/assign_copilot.py \
+            --issue-number "${{ steps.issue.outputs.issue_number }}" \
+            --repository "${{ github.repository }}" \
+            --base-branch "${{ github.event.repository.default_branch }}" \
+            --instructions-file templates/copilot-custom-instructions.txt \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Summarize run
+        run: |
+          {
+            echo "## Crash automation demo"
+            echo ""
+            echo "- Fingerprint: \`${{ steps.crash.outputs.fingerprint }}\`"
+            echo "- Issue action: \`${{ steps.issue.outputs.issue_action }}\`"
+            echo "- Issue URL: ${{ steps.issue.outputs.issue_url }}"
+            echo "- Copilot assignment: \`${{ steps.copilot.outputs.copilot_status || 'skipped' }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
