@@ -20,7 +20,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" \
-            --body "Crash workflow triggered for this issue. If Claude is configured and the issue author is allowed, the simplified root-cause job will inspect it next."
+            --body "Crash workflow triggered for this issue. If Claude is configured, the simplified root-cause job will inspect it next."
 
   investigate:
     needs: announce
@@ -31,8 +31,6 @@ jobs:
       - name: Check prerequisites
         id: gate
         env:
-          ALLOWED_AUTHORS_CSV: ${{ vars.CLAUDE_CRASHDUMP_ALLOWED_ISSUE_AUTHORS }}
-          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
           CLAUDE_TOKEN_PRESENT: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
         run: |
           set -euo pipefail
@@ -43,30 +41,8 @@ jobs:
             exit 0
           fi
 
-          allowed_csv="${ALLOWED_AUTHORS_CSV:-}"
-          author="${ISSUE_AUTHOR:-}"
-
-          if [[ -z "$allowed_csv" ]]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "reason=CLAUDE_CRASHDUMP_ALLOWED_ISSUE_AUTHORS is empty" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          allowed_csv="${allowed_csv//$'\r'/}"
-          allowed_csv="${allowed_csv//$'\n'/}"
-          run=false
-
-          IFS=',' read -ra parts <<< "$allowed_csv"
-          for part in "${parts[@]}"; do
-            candidate="$(printf '%s' "$part" | xargs)"
-            if [[ -n "$candidate" && "$candidate" == "$author" ]]; then
-              run=true
-              break
-            fi
-          done
-
-          echo "run=$run" >> "$GITHUB_OUTPUT"
-          echo "reason=author '$author' not in allowlist" >> "$GITHUB_OUTPUT"
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "reason=ready" >> "$GITHUB_OUTPUT"
 
       - name: Comment skip reason
         if: steps.gate.outputs.run != 'true'

@@ -30,8 +30,6 @@ You need the following repository configuration before the workflows will behave
   - Do not use `GITHUB_TOKEN` for issue creation here, because workflow-created issues will not trigger the follow-on `issues.opened` workflow.
 - Secret: `CLAUDE_CODE_OAUTH_TOKEN`
   - Optional, only needed if you want the Claude workflow to invoke `anthropics/claude-code-action`.
-- Variable: `CLAUDE_CRASHDUMP_ALLOWED_ISSUE_AUTHORS`
-  - Comma-separated GitHub logins that are allowed to trigger the Claude job.
 - GitHub Copilot coding agent enabled for this repository.
 
 If your organization manages Copilot centrally, also make sure this repository is allowed for Copilot coding agent access.
@@ -39,7 +37,7 @@ If your organization manages Copilot centrally, also make sure this repository i
 ## Running The Demo In GitHub Actions
 
 1. Push this repository to GitHub.
-2. Add the secrets and variable listed above.
+2. Add the secrets listed above.
 3. Run the `Simulate Crash` workflow manually.
 4. Open the created issue.
 5. Run the same workflow again with the same inputs.
