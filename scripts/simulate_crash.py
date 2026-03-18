@@ -66,8 +66,9 @@ CRASH_TYPES: dict[str, dict[str, Any]] = {
             "Tune labels and issue body sections for your team.",
         ],
         "frames": [
-            "0 demo_service.synthetic_fail_fast (src/demo_service.py:37)",
-            "1 main.synthetic_request_handler (scripts/simulate_crash.py:172)",
+            "0 demo_service.synthetic_fail_fast (src/demo_service.py:50)",
+            "1 demo_service.save_invoice (src/demo_service.py:46)",
+            "2 main.synthetic_request_handler (scripts/simulate_crash.py:172)",
         ],
         "faulting_module": "demo_service.py",
     },
