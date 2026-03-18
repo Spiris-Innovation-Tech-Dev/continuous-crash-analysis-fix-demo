@@ -11,6 +11,18 @@ This repository is a small, cloneable demo of a crash automation loop:
 
 The demo is intentionally synthetic. It is meant to showcase the orchestration around a crash, not real dump parsing.
 
+## See It Live
+
+If you want to understand the flow quickly, start with the live GitHub pages for this demo repository:
+
+- Issues: https://github.com/Spiris-Innovation-Tech-Dev/continuous-crash-analysis-fix-demo/issues
+- Pull requests: https://github.com/Spiris-Innovation-Tech-Dev/continuous-crash-analysis-fix-demo/pulls
+
+Useful examples already in the repo:
+
+- Deduplicated crash issue with a repeat-occurrence comment: https://github.com/Spiris-Innovation-Tech-Dev/continuous-crash-analysis-fix-demo/issues/5
+- Draft Copilot fix PR opened from a crash issue: https://github.com/Spiris-Innovation-Tech-Dev/continuous-crash-analysis-fix-demo/pull/6
+
 ## Repository Layout
 
 - `.github/workflows/simulate-crash.yml` - manual end-to-end demo workflow
